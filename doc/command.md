@@ -11,3 +11,7 @@ git add .
 git commit -m "WIP: 〇〇の実装中"
 git push origin main
 
+テスト
+npx vitest
+
+npx vitest tests/storage_admin.test.ts

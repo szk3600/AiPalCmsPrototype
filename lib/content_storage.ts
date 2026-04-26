@@ -2,14 +2,14 @@
  * [Infrastructure Layer] ContentStorage (Server-side Only)
  * ------------------------------------------------------------
  * 役割: Firebase Admin SDK を使用した特権アクセス層。
- * 修正内容: revalidateTag の引数エラー (Expected 2 arguments) を解消するため
- * 動的キャストを適用しました。
+ * 修正内容: 
+ * 1. Admin SDK 環境への統一 (firebase/storage の依存を排除)
+ * 2. uploadAdminJson を Admin SDK の file.save() を使用するように修正
  */
-import "server-only";
 import { getApps, initializeApp, App, cert } from "firebase-admin/app";
 import { getStorage, Storage } from "firebase-admin/storage";
-import { getPrivateKey } from "./env_guard";
-import { getErrorMessage } from "./error";
+import { getPrivateKey } from "./env_guard"; // 環境変数から秘密鍵を取得する想定
+import { getErrorMessage } from "./error";     // エラーメッセージの共通処理想定
 
 /**
  * --- Content Definitions (Domain Infrastructure) ---
@@ -66,9 +66,6 @@ export class ContentStorage implements IContentStorage {
     private storage: Storage;
     private registry: Map<string, ContentDefinition> = new Map();
 
-    /**
-     * ログ出力の制御
-     */
     private log(message: string) {
         if (process.env.NODE_ENV !== "test" || process.env.DEBUG === "true") {
             console.log(message);
@@ -83,9 +80,7 @@ export class ContentStorage implements IContentStorage {
 
         if (getApps().length === 0) {
             if (privateKey && clientEmail) {
-                this.log(
-                    `[ContentStorage] 🔑 AuthMode: SERVICE_ACCOUNT_KEY (Local/Test)`,
-                );
+                this.log(`[ContentStorage] 🔑 AuthMode: SERVICE_ACCOUNT_KEY`);
                 this.app = initializeApp({
                     credential: cert({ projectId, clientEmail, privateKey }),
                     storageBucket: bucketName,
@@ -101,7 +96,13 @@ export class ContentStorage implements IContentStorage {
         }
 
         this.storage = getStorage(this.app);
-        this.log(`[ContentStorage] 📦 Storage Initialized: gs://${bucketName}`);
+    }
+
+    /**
+     * 内部利用・外部公開用のバケット参照
+     */
+    public getBucket() {
+        return this.storage.bucket();
     }
 
     register(definitions: ContentDefinition[]): void {
@@ -122,8 +123,6 @@ export class ContentStorage implements IContentStorage {
         const parentPath =
             def.pathResolver({ ...context, id: "" }).replace(/\/$/, "") + "/";
         const idMode = def.idMode || "directory";
-
-        this.log(`[ContentStorage] 🔍 Scanning IDs: ${type} at ${parentPath}`);
 
         try {
             const [files, , apiResponse] = await this.storage.bucket().getFiles({
@@ -150,13 +149,9 @@ export class ContentStorage implements IContentStorage {
                                 ?.replace(/\.[^/.]+$/, "") || "",
                     );
             }
-
-            this.log(`[ContentStorage] ✨ Found ${ids.length} items`);
             return ids;
         } catch (e: unknown) {
-            const errorMessage = `[ContentStorage] ❌ Scan Failed: ${getErrorMessage(e)}`;
-            console.error(errorMessage);
-            throw new Error(errorMessage);
+            throw new Error(`[ContentStorage] ❌ Scan Failed: ${getErrorMessage(e)}`);
         }
     }
 
@@ -167,18 +162,11 @@ export class ContentStorage implements IContentStorage {
             def.idMode === "filename" ? `${path}.json` : `${path}/detail.json`;
         const file = this.storage.bucket().file(fullPath);
 
-        const startTime = Date.now();
         try {
             const [content] = await file.download();
-            const data = JSON.parse(content.toString()) as T;
-            this.log(
-                `[ContentStorage] ✅ Loaded: ${fullPath} (${Date.now() - startTime}ms)`,
-            );
-            return data;
+            return JSON.parse(content.toString()) as T;
         } catch (e: unknown) {
-            const errorMessage = `[ContentStorage] ❌ Load Failed: ${fullPath} - ${getErrorMessage(e)}`;
-            console.error(errorMessage);
-            throw new Error(errorMessage);
+            throw new Error(`[ContentStorage] ❌ Load Failed: ${fullPath} - ${getErrorMessage(e)}`);
         }
     }
 
@@ -189,27 +177,15 @@ export class ContentStorage implements IContentStorage {
         );
     }
 
-    /**
-     * Next.js ISR タグの再検証ロジックを実装
-     * 型エラー回避のため as any を使用しています。
-     */
     async refreshCache(type?: string, context?: ContentKeys): Promise<void> {
         if (!type) return;
-
         try {
             const { revalidateTag } = await import("next/cache");
-            // IDがあれば type_id, なければ type をタグとして発行
             const tag = context?.id ? `${type}_${context.id}` : type;
-
-            // コンパイラエラー対策：明示的に any キャストして実行
             (revalidateTag as any)(tag);
-
             this.log(`[ContentStorage] 🔄 ISR Revalidated: ${tag}`);
         } catch (e) {
-            // 非Next.js環境（スクリプト実行等）では無視
-            this.log(
-                `[ContentStorage] ℹ️ Cache refresh skipped (next/cache not available)`,
-            );
+            this.log(`[ContentStorage] ℹ️ Cache refresh skipped`);
         }
     }
 
@@ -226,5 +202,58 @@ export class ContentStorage implements IContentStorage {
             expires: Date.now() + 3600 * 1000,
         });
         return url;
+    }
+}
+
+/**
+ * 汎用：Firebase Storage からアセットの署名付きURLを取得する（Server-side）
+ * @param path Storage 内のフルパス (例: 'brand/logo.png')
+ * @returns Promise<string> 1時間有効な署名付きURL
+ */
+export async function getAssetUrl(path: string): Promise<string> {
+    if (!path) return '';
+
+    try {
+        const storageInstance = new ContentStorage();
+        const bucket = storageInstance.getBucket();
+        const file = bucket.file(path);
+
+        // 署名付きURLを生成（デフォルト1時間有効）
+        const [url] = await file.getSignedUrl({
+            action: 'read',
+            expires: Date.now() + 3600 * 1000,
+        });
+
+        return url;
+    } catch (error) {
+        console.warn(`[ContentStorage] ⚠️ Failed to get URL for: ${path}`, error);
+        return '/images/placeholder.png';
+    }
+}
+
+/**
+ * 管理者用：JSONデータを Storage にアップロードする (Admin SDK 版)
+ * 特権操作のため、API Route や Server Actions で使用されることを想定しています。
+ */
+export async function uploadAdminJson(path: string, data: any): Promise<boolean> {
+    try {
+        const storageInstance = new ContentStorage();
+        const bucket = storageInstance.getBucket();
+        const file = bucket.file(path);
+
+        const jsonString = JSON.stringify(data, null, 2);
+
+        await file.save(jsonString, {
+            contentType: 'application/json',
+            metadata: {
+                cacheControl: 'no-cache',
+            }
+        });
+
+        console.log(`[ContentStorage] 📤 Admin Upload Success: ${path}`);
+        return true;
+    } catch (error) {
+        console.error(`[ContentStorage] ❌ Admin Upload Failed: ${path}`, error);
+        return false;
     }
 }

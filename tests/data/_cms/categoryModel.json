@@ -1,0 +1,56 @@
+{
+  "categories": [
+    {
+      "id": "cat-001",
+      "slug": "ai-basics",
+      "title": "AI 基礎・リテラシー",
+      "description": "生成AIの仕組みから、プロンプトエンジニアリングの基本まで、全ての土台となる知識を習得します。",
+      "assets": {
+        "iconName": "BookOpen",
+        "imageUrl": "_cms/categories/cat-001/thumb.jpg",
+        "accentColor": "#3B82F6"
+      },
+      "stats": {
+        "contentCount": 12,
+        "updatedAt": "2026-04-26T19:00:00Z"
+      },
+      "order": 1,
+      "isPublic": true
+    },
+    {
+      "id": "cat-002",
+      "slug": "business-automation",
+      "title": "業務効率化・自動化",
+      "description": "AIエージェントやツールを組み合わせ、日常業務の 50% を自動化するための実践的なテクニック。",
+      "assets": {
+        "iconName": "Zap",
+        "imageUrl": "_cms/categories/cat-002/thumb.jpg",
+        "accentColor": "#10B981"
+      },
+      "stats": {
+        "contentCount": 8,
+        "updatedAt": "2026-04-26T19:05:00Z"
+      },
+      "order": 2,
+      "isPublic": true
+    },
+    {
+      "id": "cat-003",
+      "slug": "creative-ai",
+      "title": "クリエイティブ AI",
+      "description": "画像生成、動画生成、音楽生成。AIをクリエイティブパートナーとして使いこなす方法を学びます。",
+      "assets": {
+        "iconName": "Palette",
+        "imageUrl": "_cms/categories/cat-003/thumb.jpg",
+        "accentColor": "#F59E0B"
+      },
+      "stats": {
+        "contentCount": 15,
+        "updatedAt": "2026-04-26T19:10:00Z"
+      },
+      "order": 3,
+      "isPublic": true
+    }
+  ],
+  "lastUpdated": "2026-04-26T19:15:00Z"
+}

@@ -3,7 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { loadBrand } from "@/domain/brand/loader";
 // 開発フェーズでは tests/data の JSON を SSOT (真実の単一ソース) として使用します
-import brandData from "@/test/data/brandModel.json";
+import brandData from "@/tests/data/brandModel.json";
 import { BrandModel } from "@/domain/brand/model";
 
 const inter = Inter({ subsets: ["latin"] });
