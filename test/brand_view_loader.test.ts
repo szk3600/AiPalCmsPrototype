@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { loadBrand } from '../domain/brand/loader';
-import { BrandModel } from '../domain/brand/model';
+import { loadBrand } from '@/domain/brand/loader';
+import { BrandModel } from '@/domain/brand/model';
 import brandMockData from './data/brandModel.json';
 
 describe('Brand Loader', () => {
