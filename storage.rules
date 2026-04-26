@@ -1,0 +1,62 @@
+rules_version = '2';
+
+/**
+ * AiPal CMS Prototype: Cloud Storage Security Rules
+ * ------------------------------------------------------------
+ * フォルダ名による階層型アクセス制御を実現します。
+ */
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // 汎用ヘルパー関数
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      // カスタムクレーム 'admin' が true の場合
+      return isAuthenticated() && request.auth.token.admin == true;
+    }
+
+    /**
+     * 1. 公開フォルダ (brand/, common/ など)
+     * アセット名が '_' で始まらないフォルダは誰でも読み取り可能
+     */
+    match /{folder}/{allPaths=**} {
+      allow read: if !folder.startsWith('_');
+      // 書き込みは管理者のみ（通常は Admin SDK 経由）
+      allow write: if isAdmin();
+    }
+
+    /**
+     * 2. _cms フォルダ (保護されたコンテンツ)
+     * カテゴリー、プレイリストなどのマスターデータ
+     */
+    match /_cms/{allPaths=**} {
+      // ログイン済みユーザーなら読み取り可能
+      allow read: if isAuthenticated();
+      // 書き込みは管理者のみ
+      allow write: if isAdmin();
+    }
+
+    /**
+     * 3. _users フォルダ (ユーザープライベート領域)
+     * フォルダ名と UID が一致する場合のみアクセス可能
+     */
+    match /_users/{userId}/{allPaths=**} {
+      allow read, write: if isOwner(userId);
+    }
+
+    /**
+     * 4. _system フォルダ (システム内部用)
+     * 一般ユーザーやログイン済みユーザーであってもアクセス不可
+     */
+    match /_system/{allPaths=**} {
+      allow read, write: if isAdmin();
+    }
+  }
+}
