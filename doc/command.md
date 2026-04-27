@@ -17,4 +17,8 @@ npx vitest
 npx vitest tests/storage_admin.test.ts
 npx vitest tests/category_sync.test.ts
 npx vitest tests/category_loader.test.ts
+ストレージルールのテスト
+エミュレーターを使う
+ローカルのstorage.rulesでテスト
+firebase emulators:start --only storage
 npx vitest tests/storage_rules.test.ts

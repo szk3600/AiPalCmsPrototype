@@ -6,6 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "sync": "npx tsx scripts/sync-storage.ts",
+    "push": "npx tsx scripts/sync-storage.ts",
+    "pull": "npx tsx scripts/sync-storage.ts --pull",
     "lint": "eslint"
   },
   "dependencies": {

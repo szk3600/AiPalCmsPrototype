@@ -1,4 +1,6 @@
 {
+  "pageTitle": "学習カテゴリー",
+  "pageDescription": "AI技術の基礎からビジネス活用、クリエイティブな表現まで。あなたの興味に合わせて最適な学習パスを見つけましょう。",
   "categories": [
     {
       "id": "cat-001",
@@ -32,23 +34,6 @@
         "updatedAt": "2026-04-26T19:05:00Z"
       },
       "order": 2,
-      "isPublic": true
-    },
-    {
-      "id": "cat-003",
-      "slug": "creative-ai",
-      "title": "クリエイティブ AI",
-      "description": "画像生成、動画生成、音楽生成。AIをクリエイティブパートナーとして使いこなす方法を学びます。",
-      "assets": {
-        "iconName": "Palette",
-        "imageUrl": "_cms/categories/cat-003/thumb.jpg",
-        "accentColor": "#F59E0B"
-      },
-      "stats": {
-        "contentCount": 15,
-        "updatedAt": "2026-04-26T19:10:00Z"
-      },
-      "order": 3,
       "isPublic": true
     }
   ],

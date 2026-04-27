@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { uploadAdminJson, getAssetUrl } from '../lib/content_storage';
+import { uploadAdminJson, getAssetUrl } from '../lib/content-storage';
 // JSONを確実に読み込むためのインポート
 import adminTestDataRaw from './data/admin_test.json';
 

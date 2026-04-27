@@ -1,0 +1,30 @@
+{
+  "id": "brand-001",
+  "name": "AiPal",
+  "tagline": "AIと共に、あなたのキャリアを加速させる。学習CMSプロトタイプ",
+  "description": "AiPal は、最新のAI技術を活用して学習体験をパーソナライズする、次世代のCMSプロトタイプです。ドメイン駆動設計に基づき、柔軟な拡張性と圧倒的な開発スピードを実現します。",
+  "keywords": ["AI", "CMS", "Next.js", "Firebase", "ドメイン駆動設計", "スキルアップ"],
+  "assets": {
+    "logoUrl": "https://firebasestorage.googleapis.com/v0/b/aipalcmsprototype.firebasestorage.app/o/logo.png?alt=media&token=1037176a-e29e-46e5-be40-33af72e086f0",
+    "logoSqUrl": "https://firebasestorage.googleapis.com/v0/b/aipalcmsprototype.firebasestorage.app/o/Logo_SQ.png?alt=media&token=13d8de68-2aa0-4917-a2da-180ff17df522",
+    "faviconUrl": "https://firebasestorage.googleapis.com/v0/b/aipalcmsprototype.firebasestorage.app/o/Logo_SQ.png?alt=media&token=13d8de68-2aa0-4917-a2da-180ff17df522",
+    "ogpImageUrl": "https://firebasestorage.googleapis.com/v0/b/aipalcmsprototype.firebasestorage.app/o/logo.png?alt=media&token=1037176a-e29e-46e5-be40-33af72e086f0"
+  },
+  "socialLinks": [
+    { "platform": "x", "url": "https://x.com/aipal_official", "label": "X (Twitter)" },
+    { "platform": "instagram", "url": "https://instagram.com/aipal_official", "label": "Instagram" },
+    { "platform": "facebook", "url": "https://facebook.com/aipal.official", "label": "Facebook" },
+    { "platform": "github", "url": "https://github.com/szk3600/AiPalCmsPrototype", "label": "GitHub" },
+    { "platform": "email", "url": "mailto:support@example.com", "label": "Email" }
+  ],
+  "seo": {
+    "canonicalUrl": "https://aipal-cms-prototype-backend--aipalcmsprototype.asia-east1.hosted.app/",
+    "xHandle": "@aipal_official",
+    "googleSiteVerification": "G-E5MBB73FDY"
+  },
+  "contact": {
+    "email": "support@example.com",
+    "supportUrl": "https://example.com/support"
+  },
+  "updatedAt": "2026-04-27T11:00:00Z"
+}

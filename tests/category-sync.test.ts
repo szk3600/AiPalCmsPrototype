@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { uploadAdminJson, getAssetUrl } from '../lib/content_storage';
+import { uploadAdminJson, getAssetUrl } from '../lib/content-storage';
 import categoryDataRaw from './data/_cms/categoryModel.json';
 
 /**

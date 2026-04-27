@@ -3,12 +3,13 @@ rules_version = '2';
 /**
  * AiPal CMS Prototype: Cloud Storage Security Rules
  * ------------------------------------------------------------
- * フォルダ名による階層型アクセス制御を実現します。
+ * パスの第1階層（フォルダ名）に基づいて、公開・非公開を厳格に判別します。
  */
 service firebase.storage {
   match /b/{bucket}/o {
     
-    // 汎用ヘルパー関数
+    // --- ヘルパー関数 ---
+    
     function isAuthenticated() {
       return request.auth != null;
     }
@@ -18,44 +19,44 @@ service firebase.storage {
     }
 
     function isAdmin() {
-      // カスタムクレーム 'admin' が true の場合
       return isAuthenticated() && request.auth.token.admin == true;
     }
 
+    // --- ルール定義 ---
+
     /**
-     * 1. 公開フォルダ (brand/, common/ など)
-     * アセット名が '_' で始まらないフォルダは誰でも読み取り可能
+     * 全体パスの判定
+     * allPaths[0] はパスの最初のフォルダ名（セグメント）を指します。
      */
-    match /{folder}/{allPaths=**} {
-      allow read: if !folder.startsWith('_');
-      // 書き込みは管理者のみ（通常は Admin SDK 経由）
+    match /{allPaths=**} {
+      
+      // A. 公開ルール: 最初のフォルダ名が '_' で始まらない場合は誰でも読み取り可能
+      // (例: brand/logo.png -> allPaths[0] は 'brand')
+      allow read: if allPaths.size() > 0 && !allPaths[0].startsWith('_');
+      
+      // B. 共有保護ルール: _cms または _test フォルダはログイン済みなら読み取り可能
+      allow read: if allPaths.size() > 0 && 
+                  (allPaths[0] == '_cms' || allPaths[0] == '_test') && 
+                  isAuthenticated();
+      
+      // C. 管理者ルール: 全ての書き込み、および全領域の読み取り権限
       allow write: if isAdmin();
+      allow read: if isAdmin();
     }
 
     /**
-     * 2. _cms フォルダ (保護されたコンテンツ)
-     * カテゴリー、プレイリストなどのマスターデータ
+     * ユーザー専用領域 (_users/)
+     * match /{allPaths=**} よりも具体的なパス指定が優先されます。
      */
-    match /_cms/{allPaths=**} {
-      // ログイン済みユーザーなら読み取り可能
-      allow read: if isAuthenticated();
-      // 書き込みは管理者のみ
-      allow write: if isAdmin();
-    }
-
-    /**
-     * 3. _users フォルダ (ユーザープライベート領域)
-     * フォルダ名と UID が一致する場合のみアクセス可能
-     */
-    match /_users/{userId}/{allPaths=**} {
+    match /_users/{userId}/{anyPath=**} {
       allow read, write: if isOwner(userId);
     }
 
     /**
-     * 4. _system フォルダ (システム内部用)
-     * 一般ユーザーやログイン済みユーザーであってもアクセス不可
+     * システム領域 (_system/)
      */
-    match /_system/{allPaths=**} {
+    match /_system/{anyPath=**} {
+      // 全体パスの match で isAdmin() が定義されているため、ここでは追加のガードのみ
       allow read, write: if isAdmin();
     }
   }
