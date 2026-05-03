@@ -1,31 +1,40 @@
 /**
- * ブランドの生データ定義（Firestore のスキーマ）
- * SEO に必要なメタ情報とアセット情報を集約
+ * [Model] ブランドの生データ定義
+ * ------------------------------------------------------------
+ * 役割: ストレージ (JSON) 上の物理構造を定義します。
  */
+export interface SocialLink {
+  platform: 'x' | 'github' | 'email' | 'facebook' | 'instagram' | 'youtube';
+  url: string;
+  label: string;
+}
+
 export interface BrandModel {
-    id: string;
-    name: string;                // サイト名 (例: AiPal)
-    tagline: string;             // キャッチコピー
-    description: string;         // サイトの説明（メタディスクリプション）
-    keywords: string[];          // キーワード（SEO用）
+  id: string;
+  name: string;
+  tagline: string;
+  description: string;
+  keywords: string[];
+  
+  assets: {
+    logoUrl: string;
+    logoSqUrl: string;
+    faviconUrl: string;
+    ogpImageUrl: string;
+  };
 
-    assets: {
-        logoUrl: string;           // メインロゴ (logo.png)
-        logoSqUrl: string;         // 正方形ロゴ (Logo_SQ.png)
-        faviconUrl: string;        // ファビコン
-        ogpImageUrl: string;       // OGP用の代表画像
-    };
+  socialLinks: SocialLink[];
 
-    seo: {
-        canonicalUrl: string;      // 正規URL
-        twitterHandle: string;     // Twitter アカウント (@...)
-        googleSiteVerification?: string; // Google Search Console 連携用
-    };
+  seo: {
+    canonicalUrl: string;
+    xHandle: string; // JSON のフィールド名に合わせ更新
+    googleSiteVerification?: string;
+  };
 
-    contact: {
-        email: string;
-        supportUrl?: string;
-    };
+  contact: {
+    email: string;
+    supportUrl?: string;
+  };
 
-    updatedAt: string;           // ISO 8601 形式
+  updatedAt: string;
 }
